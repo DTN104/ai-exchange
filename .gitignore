@@ -1,0 +1,10 @@
+.firecrawl/
+.DS_Store
+data/
+.env
+.env.*
+!.env.example
+**/target/
+**/node_modules/
+**/.next/
+**/.mvn/wrapper/maven-wrapper.jar
