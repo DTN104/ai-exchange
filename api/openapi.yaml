@@ -46,6 +46,14 @@ paths:
                 $ref: '#/components/schemas/Health'
               example:
                 status: UP
+        '503':
+          description: Application health is down or out of service.
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: DOWN
 components:
   schemas:
     ServiceStatus:
@@ -69,4 +77,9 @@ components:
       properties:
         status:
           type: string
-          const: UP
+          enum: [UP, DOWN, OUT_OF_SERVICE, UNKNOWN]
+        groups:
+          type: array
+          description: Optional probe group names advertised by Spring Boot.
+          items:
+            type: string

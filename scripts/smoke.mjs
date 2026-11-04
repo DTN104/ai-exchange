@@ -35,7 +35,7 @@ function start(name, command, args, cwd) {
 }
 
 async function stop(child) {
-  if (!child || child.exitCode !== null || child.signalCode !== null) return;
+  if (!child?.pid || child.exitCode !== null || child.signalCode !== null) return;
   const exited = once(child, 'exit');
   child.kill('SIGTERM');
   const force = setTimeout(() => child.kill('SIGKILL'), 5_000);
@@ -78,7 +78,9 @@ try {
   const status = await get(statusUrl);
   assert.equal(status.status, 200);
   assert.deepEqual(await status.json(), { name: 'AI Exchange', stage: 'scaffold', simulationAvailable: false });
-  assert.deepEqual(await (await get('http://127.0.0.1:8080/actuator/health')).json(), { status: 'UP' });
+  const health = await get('http://127.0.0.1:8080/actuator/health');
+  assert.equal(health.status, 200);
+  assert.equal((await health.json()).status, 'UP');
   await assertPage('Backend connected', 'Backend unavailable');
   await stop(java);
   await assertPage('Backend unavailable', 'Backend connected');

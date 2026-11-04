@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main, scaffold]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/dashboard/package-lock.json
+      - name: Verify Java reactor
+        run: ./mvnw -B verify
+      - name: Install dashboard dependencies
+        run: npm --prefix apps/dashboard ci --no-fund
+      - name: Test dashboard adapter
+        run: npm --prefix apps/dashboard test
+      - name: Lint dashboard
+        run: npm --prefix apps/dashboard run lint
+      - name: Check TypeScript
+        run: npm --prefix apps/dashboard run typecheck
+      - name: Validate implemented OpenAPI contract
+        run: npm --prefix apps/dashboard run api:lint
+      - name: Build dashboard
+        run: npm --prefix apps/dashboard run build
+      - name: Smoke test real servers, offline fallback and recovery
+        run: node scripts/smoke.mjs
+      - name: Upload Java reports on failure
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: java-test-reports
+          path: apps/server/target/surefire-reports/
+          retention-days: 7
+          if-no-files-found: ignore
