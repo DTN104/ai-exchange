@@ -2,5 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent><groupId>io.aiexchange</groupId><artifactId>ai-exchange</artifactId><version>0.1.0</version><relativePath>../../pom.xml</relativePath></parent>
   <artifactId>exchange-core</artifactId>
-
+  <dependencies>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+  </dependencies>
 </project>
