@@ -29,4 +29,4 @@ Deferred minor suggestions: add a subprocess lock regression (current lock tests
 
 Not certified or implemented: hardware power-loss/directory-entry durability, authentication against deliberate hash recomputation, agent runtime/resume, a replay/order-entry HTTP API, hundreds-of-traders throughput or a market dashboard. force(true) is the Java/OS flush boundary, not a hardware survival claim.
 
-Linux CI and the published PR are separate evidence sources; local success does not establish their state. No merge is included in this delivery.
+[Linux CI passed](https://github.com/DTN104/ai-exchange/actions/runs/41810406316) for implementation commit `ca83b3937bc04831ee04394676435b7f89392b73`, covering the full reactor, dashboard and smoke checks. Delivery is [PR #6](https://github.com/DTN104/ai-exchange/pull/6), targeting matching-risk and depending on open PR #5. Later documentation commits have their own CI checks. Neither PR was merged.

@@ -46,34 +46,38 @@
 
 ### Task 1: Isolated validated state replay
 
-- [ ] Write failing core tests for manual accepted/rejected/cancel batches, matching-result replay equivalence, invalid event/command sequence, bad reservation/trade/maker/terminal events and poisoned replay state.
-- [ ] Observe missing Replayer API failure; implement Replayer without altering the live Plan trust boundary.
-- [ ] Validate recorded command correspondence, exact counter metadata and event transitions; use existing risk checks/reducer but never planPlace. Apply only to private isolated replay state, and fail-stop it on any malformed batch.
-- [ ] Verify core tests and existing full reactor; commit.
+- [x] Write failing core tests for manual accepted/rejected/cancel batches, matching-result replay equivalence, invalid event/command sequence, bad reservation/trade/maker/terminal events and poisoned replay state.
+- [x] Observe missing Replayer API failure; implement Replayer without altering the live Plan trust boundary.
+- [x] Validate recorded command correspondence, exact counter metadata and event transitions; use existing risk checks/reducer but never planPlace. Apply only to private isolated replay state, and fail-stop it on any malformed batch.
+- [x] Verify core tests and existing full reactor; commit.
 
 ### Task 2: Canonical format and append-only storage
 
-- [ ] Add managed Jackson and JUnit to journal. Write failing round-trip/canonical/hash and real-file lock/create/limit tests.
-- [ ] Implement immutable manifest, strict codec with duplicate-key/trailing-token/unknown-field rejection and bounded NDJSON, existing-file refusal, full write loop and force.
-- [ ] Confirm all core event types, nullable business-invalid input fields and near-Long.MAX_VALUE values round-trip exactly; hash does not depend on map insertion order/runId/path.
-- [ ] Verify journal+reactor tests; commit.
+- [x] Add managed Jackson and JUnit to journal. Write failing round-trip/canonical/hash and real-file lock/create/limit tests.
+- [x] Implement immutable manifest, strict codec with duplicate-key/trailing-token/unknown-field rejection and bounded NDJSON, existing-file refusal, full write loop and force.
+- [x] Confirm all core event types, nullable business-invalid input fields and near-Long.MAX_VALUE values round-trip exactly; hash does not depend on map insertion order/runId/path.
+- [x] Verify journal+reactor tests; commit.
 
 ### Task 3: Durable coordinator, replay verifier and explicit repair
 
-- [ ] Write failing tests for coordinator commit order, IO failure admission, saved-event replay, sealed/unsealed/prefix runs and tampering.
-- [ ] Implement persist-before-apply execution and completion sealing. Check monotonic nonnegative simulation time before planning. Failure-injection seam remains package-private.
-- [ ] Implement streaming bounded offline reader and full-file validation, prefix capture and completion-hash comparison. Implement exclusive-locked explicit tail truncation only after complete-prefix validation succeeds.
-- [ ] Exercise mixed commands on a real file, a multi-buffer sweep record, durable-but-unapplied restart, checksum/schema/sequence/semantic damage, bad UTF-8/duplicate keys, torn LF, prefix corruption + tail, active writer locks, file caps and lifecycle boundaries.
-- [ ] Verify full reactor and commit.
+- [x] Write failing tests for coordinator commit order, IO failure admission, saved-event replay, sealed/unsealed/prefix runs and tampering.
+- [x] Implement persist-before-apply execution and completion sealing. Check monotonic nonnegative simulation time before planning. Failure-injection seam remains package-private.
+- [x] Implement streaming bounded offline reader and full-file validation, prefix capture and completion-hash comparison. Implement exclusive-locked explicit tail truncation only after complete-prefix validation succeeds.
+- [x] Exercise mixed commands on a real file, a multi-buffer sweep record, durable-but-unapplied restart, checksum/schema/sequence/semantic damage, bad UTF-8/duplicate keys, torn LF, prefix corruption + tail, active writer locks, file caps and lifecycle boundaries.
+- [x] Verify full reactor and commit.
 
 ### Task 4: Review, docs and public delivery
 
-- [ ] Document file format, limits, Java example, failure/uncertain-ack semantics, seal versus prefix, explicit recovery, version changes and OS-level durability limits.
-- [ ] Update module/project status and CI failure artifacts; HTTP behavior unchanged. Run existing dashboard checks/build and real-server/signal smoke after moving the project.
-- [ ] Fresh whole-branch read-only review; fix important findings with failing-first regression tests, then verify the suite.
-- [ ] Push journal-replay and open a stacked PR targeting matching-risk while PR5 is open; attach it to chat and verify Linux CI. Do not merge either PR without integration authorization.
-- [ ] Mark plan complete and record evidence; final scope excludes agent runtime, agent resume, real data, HTTP replay endpoints and full hardware power-loss testing.
+- [x] Document file format, limits, Java example, failure/uncertain-ack semantics, seal versus prefix, explicit recovery, version changes and OS-level durability limits.
+- [x] Update module/project status and CI failure artifacts; HTTP behavior unchanged. Run existing dashboard checks/build and real-server/signal smoke after moving the project.
+- [x] Fresh whole-branch read-only review; fix important findings with failing-first regression tests, then verify the suite.
+- [x] Push journal-replay and open a stacked PR targeting matching-risk while PR5 is open; attach it to chat and verify Linux CI. Do not merge either PR without integration authorization.
+- [x] Mark plan complete and record evidence; final scope excludes agent runtime, agent resume, real data, HTTP replay endpoints and full hardware power-loss testing.
 
 ## Self-review
 
 The initialization/completion records provide versioned genesis and persisted hash comparison without computing a full state copy per command. A completion seal is optional after a crash, never fabricated on IO failure. Prefix replay validates the whole file so it cannot silently bypass later corruption. Explicit tail repair never opens a general append/resume API. This refines the already-approved section5 within the owner's continued-development authorization.
+
+## Delivery
+
+Implemented as [PR #6](https://github.com/DTN104/ai-exchange/pull/6), targeting matching-risk and depending on open PR #5. Independent review found no blocking findings. [Linux CI](https://github.com/DTN104/ai-exchange/actions/runs/41810406316) passed for implementation commit ca83b39. Neither PR was merged. See [verification](../../verification/2026-11-04-journal-replay.md) for exact evidence and deferred items.
