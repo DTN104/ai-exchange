@@ -1,4 +1,7 @@
 .firecrawl/
+.playwright-mcp/
+.superpowers/
+*.tsbuildinfo
 .DS_Store
 data/
 .env

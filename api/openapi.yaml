@@ -1,0 +1,72 @@
+openapi: 3.1.0
+info:
+  title: AI Exchange Scaffold API
+  version: 0.1.0
+  description: Local read-only service status. Simulation and run APIs are planned, not implemented.
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+  contact:
+    name: AI Exchange contributors
+    url: https://github.com/DTN104/ai-exchange
+servers:
+  - url: http://127.0.0.1:8080
+security: []
+tags:
+  - name: Status
+    description: Local service readiness and implementation stage.
+paths:
+  /api/v1/status:
+    get:
+      operationId: getServiceStatus
+      tags: [Status]
+      summary: Read the implemented service stage
+      responses:
+        '200':
+          description: The server is running; simulation is not implemented yet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceStatus'
+              example:
+                name: AI Exchange
+                stage: scaffold
+                simulationAvailable: false
+  /actuator/health:
+    get:
+      operationId: getHealth
+      tags: [Status]
+      summary: Read application health
+      responses:
+        '200':
+          description: Application is healthy.
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: UP
+components:
+  schemas:
+    ServiceStatus:
+      type: object
+      additionalProperties: false
+      required: [name, stage, simulationAvailable]
+      properties:
+        name:
+          type: string
+          const: AI Exchange
+        stage:
+          type: string
+          const: scaffold
+        simulationAvailable:
+          type: boolean
+          const: false
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: UP
