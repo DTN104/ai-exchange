@@ -1,6 +1,6 @@
 # AI Exchange — đề xuất kiến trúc MVP
 
-Trạng thái: chủ dự án đã duyệt ngày 04/11/2026; chưa triển khai.
+Trạng thái: chủ dự án đã duyệt ngày 04/11/2026; trạng thái triển khai từng milestone nằm trong README và docs/roadmap.md.
 Ngày: 19/10/2026.
 Nguồn: [nghiên cứu nền tảng và license](../../research/2026-10-19-market-simulators.md).
 

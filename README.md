@@ -42,6 +42,7 @@ npm --prefix apps/dashboard run typecheck
 npm --prefix apps/dashboard run api:lint
 npm --prefix apps/dashboard run build
 node scripts/smoke.mjs
+node --test scripts/smoke-signals.test.mjs
 ```
 
 Stop any existing local servers before the smoke test. It needs ports 3000 and 8080 free, starts the production servers, checks API responses and rendered page states, tests offline/recovery behavior, then stops its own processes. It never stops another process already using those ports. Java integration tests use random ports. Dashboard tests use Node's built-in test runner with TypeScript stripping and local HTTP fixtures.

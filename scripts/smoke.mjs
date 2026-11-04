@@ -13,6 +13,24 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const logs = await mkdtemp(join(tmpdir(), 'ai-exchange-smoke-'));
 const children = [];
 const streams = [];
+let cleanupPromise;
+
+function cleanup() {
+  return cleanupPromise ??= (async () => {
+    await Promise.all(children.map(stop));
+    await Promise.all(streams.map(stream => new Promise(resolve => stream.end(resolve))));
+    await rm(logs, { recursive: true, force: true });
+  })();
+}
+
+for (const [signal, code] of [['SIGINT', 130], ['SIGTERM', 143]]) {
+  process.once(signal, () => {
+    void cleanup().then(() => process.exit(code), error => {
+      console.error(error);
+      process.exit(code);
+    });
+  });
+}
 
 async function requireFreePort(port) {
   const probe = createServer();
@@ -24,6 +42,7 @@ async function requireFreePort(port) {
 }
 
 function start(name, command, args, cwd) {
+  assert.equal(cleanupPromise, undefined, 'Cannot start a server during cleanup');
   const log = createWriteStream(join(logs, `${name}.log`), { flags: 'a' });
   streams.push(log);
   const child = spawn(command, args, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -94,7 +113,5 @@ try {
   }
   throw error;
 } finally {
-  await Promise.all(children.map(stop));
-  await Promise.all(streams.map(stream => new Promise(resolve => stream.end(resolve))));
-  await rm(logs, { recursive: true, force: true });
+  await cleanup();
 }
