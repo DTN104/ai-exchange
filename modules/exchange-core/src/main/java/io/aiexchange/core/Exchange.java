@@ -15,6 +15,7 @@ import static io.aiexchange.core.ExchangeSnapshot.*;
 /** Single-thread-confined AIX matching and accounting state. No persistence is performed here. */
 public final class Exchange {
     public static final String SYMBOL = "AIX";
+    public static final String ENGINE_VERSION = "matching-v1";
     public static final int MAX_OPEN_ORDERS = 20_000;
     public record Endowment(long cash, long shares) {}
 
@@ -116,6 +117,111 @@ public final class Exchange {
         var plan = plan(command);
         apply(plan);
         return plan;
+    }
+
+    /** Isolated event reducer: recorded input cannot modify a live Exchange. */
+    public static final class Replayer {
+        private final Exchange state;
+        private Replayer(Map<Long, Endowment> traders, int limit) { state = new Exchange(traders, limit); }
+        public void accept(ExchangeCommand command, List<ExchangeEvent> events) { state.replayBatch(command, events); }
+        public ExchangeSnapshot snapshot() { return state.snapshot(); }
+    }
+
+    public static Replayer replayer(Map<Long, Endowment> traders, int maxOpenOrders) {
+        return new Replayer(traders, maxOpenOrders);
+    }
+
+    private void replayBatch(ExchangeCommand command, List<ExchangeEvent> recorded) {
+        ensureHealthy();
+        try {
+            requireReplay(command != null && recorded != null, "Missing replay input");
+            var events = List.copyOf(recorded);
+            requireReplay(!events.isEmpty() && events.size() <= MAX_OPEN_ORDERS + 2, "Invalid batch length");
+            long nextCommand = incrementExact(commandSequence);
+            long nextEvent = eventSequence;
+            for (var event : events) {
+                requireReplay(event.payload() != null && event.commandSequence() == nextCommand
+                        && event.sequence() == (nextEvent = incrementExact(nextEvent)), "Replay sequence gap");
+            }
+            switch (command) {
+                case PlaceOrder place -> replayPlace(place, events);
+                case CancelOrder cancel -> {
+                    requireReplay(events.size() == 1 && events.getFirst().payload().equals(planCancel(cancel).getFirst()),
+                            "Recorded cancellation disagrees with state/input");
+                    applyPayload(events.getFirst().payload());
+                }
+            }
+            commandSequence = nextCommand;
+            eventSequence = nextEvent;
+        } catch (RuntimeException invalid) {
+            failed = true;
+            throw new IllegalArgumentException("Invalid recorded event batch", invalid);
+        }
+    }
+
+    private void replayPlace(PlaceOrder input, List<ExchangeEvent> events) {
+        var first = events.getFirst().payload();
+        if (first instanceof OrderRejected rejected) {
+            var reason = validate(input);
+            if (reason == null && rejected.reason() == RejectionReason.OPEN_ORDER_LIMIT
+                    && input.timeInForce() == TimeInForce.GTC && orders.size() >= maxOpenOrders && !crossesBest(input))
+                reason = RejectionReason.OPEN_ORDER_LIMIT;
+            requireReplay(reason != null && events.size() == 1 && rejected(input, reason).getFirst().equals(rejected),
+                    "Invalid recorded order rejection");
+            applyPayload(first);
+            return;
+        }
+        requireReplay(validate(input) == null && first.equals(new OrderAccepted(input)), "Invalid recorded order acceptance");
+        applyPayload(first);
+        boolean terminal = false;
+        for (int i = 1; i < events.size(); i++) {
+            var payload = events.get(i).payload();
+            requireReplay(!terminal && orders.containsKey(input.orderId()), "Events after incoming order completed");
+            switch (payload) {
+                case TradeExecuted trade -> {
+                    var maker = bestContra(input);
+                    var incoming = orders.get(input.orderId());
+                    requireReplay(maker != null && crossesBest(input) && maker.order().traderId() != input.traderId()
+                            && trade.makerOrderId() == maker.order().orderId() && trade.takerOrderId() == input.orderId()
+                            && trade.price() == maker.order().price()
+                            && trade.quantity() == min(maker.remaining(), incoming.remaining()), "Invalid recorded trade");
+                    applyPayload(trade);
+                }
+                case OrderRested rested -> {
+                    requireReplay(i == events.size() - 1 && rested.orderId() == input.orderId()
+                            && input.timeInForce() == TimeInForce.GTC && !crossesBest(input)
+                            && orders.size() <= maxOpenOrders, "Invalid resting remainder");
+                    applyPayload(rested);
+                    terminal = true;
+                }
+                case IncomingRemainderCancelled cancelled -> {
+                    var maker = bestContra(input);
+                    boolean selfTrade = crossesBest(input) && maker.order().traderId() == input.traderId();
+                    boolean validReason = cancelled.reason() == CancellationReason.SELF_TRADE_PREVENTED ? selfTrade
+                            : cancelled.reason() == CancellationReason.IOC_REMAINDER && input.timeInForce() == TimeInForce.IOC && !crossesBest(input);
+                    requireReplay(i == events.size() - 1 && cancelled.orderId() == input.orderId() && validReason,
+                            "Invalid incoming cancellation");
+                    applyPayload(cancelled);
+                    terminal = true;
+                }
+                default -> throw new IllegalArgumentException("Unexpected placement event");
+            }
+        }
+        requireReplay(!orders.containsKey(input.orderId()) || terminal, "Incoming order has no terminal event");
+    }
+
+    private LiveOrder bestContra(PlaceOrder input) {
+        var contra = input.side() == Side.BUY ? asks : bids;
+        return contra.isEmpty() ? null : orders.get(contra.firstEntry().getValue().getFirst());
+    }
+
+    private boolean crossesBest(PlaceOrder input) {
+        var maker = bestContra(input);
+        return maker != null && (input.side() == Side.BUY ? input.price() >= maker.order().price() : input.price() <= maker.order().price());
+    }
+
+    private static void requireReplay(boolean condition, String message) {
+        if (!condition) throw new IllegalArgumentException(message);
     }
 
     private List<Payload> planPlace(PlaceOrder order) {
