@@ -1,6 +1,6 @@
 # AI Exchange Scaffold Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Hoàn thành milestone A: public repository chứa Java/Spring Boot và Next.js scaffold build được, có kiểm tra kết nối thực, contract và hướng dẫn đóng góp.
 
@@ -47,14 +47,14 @@
 
 **Interfaces:** GET /actuator/health trả 200 với status="UP". GET /api/v1/status trả 200 với {"name":"AI Exchange","stage":"scaffold","simulationAvailable":false}. Hai endpoint read-only, không auth khi chạy local. Chưa có API /runs.
 
-- [ ] Kiểm tra registry và official compatibility docs, chọn patch stable cho Spring Boot hỗ trợ Java 21; pin Maven 3.9.x và wrapper chính thức với distribution checksum. Ghi phiên bản đã chọn trong README; không dùng milestone/RC.
-- [ ] Viết api/openapi.yaml trước controller, gồm response schema, required fields và hai example đúng với interface trên. Không thêm các endpoint tương lai vào paths.
-- [ ] Tạo parent reactor, ba module Java và server; dependency direction server → core/simulation/journal, simulation → core, journal → core. Module chưa có code được để trống với README giải thích trách nhiệm.
-- [ ] Viết StatusApiTest: dùng @SpringBootTest(webEnvironment=RANDOM_PORT), JDK HttpClient; assert health.status==UP và status.name/stage/simulationAvailable đúng giá trị; assert content-type là JSON.
-- [ ] Chạy ./mvnw -pl apps/server -am test, xác nhận test status thất bại khi chưa có controller.
-- [ ] Thêm ExchangeApplication và StatusController với record response; application.properties bind 127.0.0.1:8080, chỉ expose actuator health, tắt banner và không thêm database dependency.
-- [ ] Chạy ./mvnw verify; server tạo executable jar. Giới hạn heap runtime -Xmx512m trong quickstart, không tuyên bố đây là RSS đã đo.
-- [ ] Commit contract, Maven files, module docs, implementation và test.
+- [x] Kiểm tra registry và official compatibility docs, chọn patch stable cho Spring Boot hỗ trợ Java 21; pin Maven 3.9.x và wrapper chính thức với distribution checksum. Ghi phiên bản đã chọn trong README; không dùng milestone/RC.
+- [x] Viết api/openapi.yaml trước controller, gồm response schema, required fields và hai example đúng với interface trên. Không thêm các endpoint tương lai vào paths.
+- [x] Tạo parent reactor, ba module Java và server; dependency direction server → core/simulation/journal, simulation → core, journal → core. Module chưa có code được để trống với README giải thích trách nhiệm.
+- [x] Viết StatusApiTest: dùng @SpringBootTest(webEnvironment=RANDOM_PORT), JDK HttpClient; assert health.status==UP và status.name/stage/simulationAvailable đúng giá trị; assert content-type là JSON.
+- [x] Chạy ./mvnw -pl apps/server -am test, xác nhận test status thất bại khi chưa có controller.
+- [x] Thêm ExchangeApplication và StatusController với record response; application.properties bind 127.0.0.1:8080, chỉ expose actuator health, tắt banner và không thêm database dependency.
+- [x] Chạy ./mvnw verify; server tạo executable jar. Giới hạn heap runtime -Xmx512m trong quickstart, không tuyên bố đây là RSS đã đo.
+- [x] Commit contract, Maven files, module docs, implementation và test.
 
 ## Task 2: Next.js status dashboard và kiểm tra luồng HTTP
 
@@ -62,34 +62,34 @@
 
 **UI đề xuất:** một trang nền sáng, chữ đậm dễ đọc, một thẻ kết nối backend và danh sách ngắn milestone B–E. Nội dung tiếng Anh để phù hợp repository open-source. Trang này là scaffold status page; thiết kế trading dashboard sẽ làm ở milestone E.
 
-- [ ] Kiểm tra peerDependencies và Node engines; pin Next/React/TypeScript/ESLint tương thích, npm install tạo lockfile. Registry kiểm tra ngày 04/11/2026 cho next=16.4.5 (Node >=20.9), react=19.3.1; kiểm tra lại trước khi pin.
-- [ ] Viết tests cho getBackendStatus(fetcher: typeof fetch): Promise<BackendStatus | null>, với BackendStatus chính xác là response Task 1. Assert response hợp lệ được chấp nhận; fetch throw, HTTP 503, JSON lỗi, stage sai hoặc simulationAvailable không phải false đều trả null.
-- [ ] Dùng Node test runner và TypeScript stripping có sẵn trên Node 22; nếu runtime yêu cầu flag, ghi rõ trong test script. Chạy test và xác nhận fail trước implementation.
-- [ ] Implement getBackendStatus bằng fetch tới URL localhost cố định, cache no-store, timeout 2 giây và kiểm tra schema nhỏ tại boundary; không thêm validation dependency.
-- [ ] Implement server-rendered page / dùng adapter trên, force dynamic để trạng thái không bị đóng băng lúc build. Connected và unavailable có text rõ, không chỉ phân biệt bằng màu. Thêm link refresh với hành vi reload, không thêm polling/SSE khi chưa có simulation.
-- [ ] Thêm npm scripts test, lint, typecheck, build và dev/start bind 127.0.0.1. Không tải font/CDN trong build.
-- [ ] Chạy npm test, npm run lint, npm run typecheck và npm run build trong apps/dashboard.
-- [ ] Viết scripts/smoke.mjs: dùng node:assert/strict và fetch timeout; assert health, status và HTML dashboard chứa “Backend connected”/“Simulation not implemented yet”. Chạy với Java jar và Next production server thật.
-- [ ] Dừng backend rồi request lại dashboard, assert “Backend unavailable”; khởi động lại backend và kiểm tra connected trở lại để xác nhận không bị static cache.
-- [ ] Commit dashboard, lockfile và smoke script.
+- [x] Kiểm tra peerDependencies và Node engines; pin Next/React/TypeScript/ESLint tương thích, npm install tạo lockfile. Registry kiểm tra ngày 04/11/2026 cho next=16.4.5 (Node >=20.9), react=19.3.1; kiểm tra lại trước khi pin.
+- [x] Viết tests cho getBackendStatus(fetcher: typeof fetch): Promise<BackendStatus | null>, với BackendStatus chính xác là response Task 1. Assert response hợp lệ được chấp nhận; fetch throw, HTTP 503, JSON lỗi, stage sai hoặc simulationAvailable không phải false đều trả null.
+- [x] Dùng Node test runner và TypeScript stripping có sẵn trên Node 22; nếu runtime yêu cầu flag, ghi rõ trong test script. Chạy test và xác nhận fail trước implementation.
+- [x] Implement getBackendStatus bằng fetch tới URL localhost cố định, cache no-store, timeout 2 giây và kiểm tra schema nhỏ tại boundary; không thêm validation dependency.
+- [x] Implement server-rendered page / dùng adapter trên, force dynamic để trạng thái không bị đóng băng lúc build. Connected và unavailable có text rõ, không chỉ phân biệt bằng màu. Thêm link refresh với hành vi reload, không thêm polling/SSE khi chưa có simulation.
+- [x] Thêm npm scripts test, lint, typecheck, build và dev/start bind 127.0.0.1. Không tải font/CDN trong build.
+- [x] Chạy npm test, npm run lint, npm run typecheck và npm run build trong apps/dashboard.
+- [x] Viết scripts/smoke.mjs: dùng node:assert/strict và fetch timeout; assert health, status và HTML dashboard chứa “Backend connected”/“Simulation not implemented yet”. Chạy với Java jar và Next production server thật.
+- [x] Dừng backend rồi request lại dashboard, assert “Backend unavailable”; khởi động lại backend và kiểm tra connected trở lại để xác nhận không bị static cache.
+- [x] Commit dashboard, lockfile và smoke script.
 
 ## Task 3: Open-source docs, CI và public GitHub
 
 **Consumes:** tất cả lệnh verify từ Task 1–2. **Produces:** public repository DTN104/ai-exchange, main branch có scaffold và CI đã kiểm tra.
 
-- [ ] Thêm Apache-2.0 LICENSE đầy đủ; THIRD_PARTY_NOTICES phân biệt nghiên cứu tham khảo với code đã tái sử dụng (chưa có upstream code được port). Giữ các link license trong research.
-- [ ] README có prerequisites, hai terminal khởi động server/dashboard, URLs, các lệnh verify và trạng thái rõ “Scaffold; simulation not implemented”. CONTRIBUTING mô tả clone/build/tests/license provenance; SECURITY hướng dẫn báo lỗi qua GitHub private vulnerability reporting nếu được bật, không bịa email liên hệ.
-- [ ] docs/roadmap.md liệt kê B matching/risk, C journal/replay, D agents, E dashboard/benchmark; scenarios/README.md mô tả cấu hình tổng hợp sẽ có ở D, không tạo scenario mà chưa có loader.
-- [ ] Thêm .github/workflows/ci.yml: Java 21 ./mvnw -B verify; Node 22 npm ci, tests, lint, typecheck, build; validate OpenAPI bằng validator version cố định. Chỉ permissions contents:read; không cần secret hoặc dịch vụ trả phí.
-- [ ] Smoke CI khởi động executable jar và Next production server, bounded readiness polling, chạy script, stop backend và kiểm tra unavailable. Dọn process bằng trap kể cả job thất bại; lưu log khi có lỗi.
-- [ ] Dependency update config dùng Maven/npm/GitHub Actions hằng tuần; không auto-merge. Checksum/pin action theo commit chính thức đã xác minh khi cấu hình.
-- [ ] Chạy toàn bộ checks và smoke local. Kiểm tra git diff --check, staged file list và credential patterns; loại browser artifacts đang untracked, caches và data khỏi commit.
-- [ ] Commit docs/CI; dùng gh kiểm tra lại DTN104/ai-exchange. Nếu chưa có, tạo --public với description; nếu đã có, kiểm tra nội dung trước và không overwrite. Push main sau khi xác minh remote đúng owner/tên/public visibility.
-- [ ] Kiểm tra GitHub repo public, default branch main và CI run. Nếu CI fail, sửa nguyên nhân và chạy lại check liên quan; chỉ báo CI passed khi có kết quả run thành công.
-- [ ] Kết quả giao: repository URL, commit SHA, local checks và CI thực tế; chưa benchmark M2 500 agent, chưa triển khai matching/replay và không deploy dịch vụ.
+- [x] Thêm Apache-2.0 LICENSE đầy đủ; THIRD_PARTY_NOTICES phân biệt nghiên cứu tham khảo với code đã tái sử dụng (chưa có upstream code được port). Giữ các link license trong research.
+- [x] README có prerequisites, hai terminal khởi động server/dashboard, URLs, các lệnh verify và trạng thái rõ “Scaffold; simulation not implemented”. CONTRIBUTING mô tả clone/build/tests/license provenance; SECURITY hướng dẫn báo lỗi qua GitHub private vulnerability reporting nếu được bật, không bịa email liên hệ.
+- [x] docs/roadmap.md liệt kê B matching/risk, C journal/replay, D agents, E dashboard/benchmark; scenarios/README.md mô tả cấu hình tổng hợp sẽ có ở D, không tạo scenario mà chưa có loader.
+- [x] Thêm .github/workflows/ci.yml: Java 21 ./mvnw -B verify; Node 22 npm ci, tests, lint, typecheck, build; validate OpenAPI bằng validator version cố định. Chỉ permissions contents:read; không cần secret hoặc dịch vụ trả phí.
+- [x] Smoke CI khởi động executable jar và Next production server, bounded readiness polling, chạy script, stop backend và kiểm tra unavailable. Dọn process bằng trap kể cả job thất bại; lưu log khi có lỗi.
+- [x] Dependency update config dùng Maven/npm/GitHub Actions hằng tuần; không auto-merge. Checksum/pin action theo commit chính thức đã xác minh khi cấu hình.
+- [x] Chạy toàn bộ checks và smoke local. Kiểm tra git diff --check, staged file list và credential patterns; loại browser artifacts đang untracked, caches và data khỏi commit.
+- [x] Commit docs/CI; dùng gh kiểm tra lại DTN104/ai-exchange. Nếu chưa có, tạo --public với description; nếu đã có, kiểm tra nội dung trước và không overwrite. Push main sau khi xác minh remote đúng owner/tên/public visibility.
+- [x] Kiểm tra GitHub repo public, default branch main và CI run. Nếu CI fail, sửa nguyên nhân và chạy lại check liên quan; chỉ báo CI passed khi có kết quả run thành công.
+- [x] Kết quả giao: repository URL, commit SHA, local checks và CI thực tế; chưa benchmark M2 500 agent, chưa triển khai matching/replay và không deploy dịch vụ.
 
 ## Self-review và handoff
 
 Kế hoạch chỉ triển khai milestone A đã được spec quy định; mục tiêu full MVP không bị xóa khỏi roadmap. Response schema nhất quán giữa controller, OpenAPI, dashboard và tests. Năm review focus ở trên có test hoặc kiểm tra thuộc task sở hữu. Không bổ sung trading API, placeholder engine implementation hay cloud setup.
 
-Đề xuất thực thi Native: agent chính làm tuần tự trong chat này vì ba task phụ thuộc trực tiếp, scaffold nhỏ và ưu tiên ít chi phí. Cần chủ dự án review plan và chọn cách thực thi trước khi viết code theo writing-plans skill.
+Chủ dự án đã duyệt cách thực thi Native ngày 04/11/2026. Ba task đã hoàn thành; agent chính triển khai trong chat này và một reviewer độc lập kiểm tra trước khi publish. Repository public: https://github.com/DTN104/ai-exchange . Linux CI cho commit a207518 đã thành công: https://github.com/DTN104/ai-exchange/actions/runs/41773810141 . Chi tiết kiểm chứng và các mục nhỏ còn hoãn: ../../verification/2026-11-04-scaffold.md .
