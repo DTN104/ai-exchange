@@ -52,5 +52,6 @@ jobs:
           path: |
             apps/server/target/surefire-reports/
             modules/exchange-core/target/surefire-reports/
+            modules/journal/target/surefire-reports/
           retention-days: 7
           if-no-files-found: ignore
