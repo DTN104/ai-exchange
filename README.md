@@ -4,7 +4,7 @@
 
 An open-source market microstructure simulator built with Java and Next.js. The goal is a synthetic stock exchange with hundreds of strategy-driven traders, event sourcing and verifiable deterministic replay.
 
-**Current status: matching/risk Java library implemented; web application remains status-only.** The core supports price-time matching, GTC/IOC/cancel, balance reservations and settlement. The backend serves health and service status; the web page checks its connection. A running market with agents, durable journals and replay remains planned in [the roadmap](docs/roadmap.md).
+**Current status: matching/risk and journal/state-replay Java libraries implemented; web application remains status-only.** The core supports price-time matching, GTC/IOC/cancel, reservations and settlement. The journal adds persist-before-apply records, checksums, offline replay and final hash verification. A running market with agents and live trading controls remains planned in [the roadmap](docs/roadmap.md).
 
 ## Run locally
 
@@ -54,7 +54,7 @@ Stop any existing local servers before the smoke test. It needs ports 3000 and 8
 | `apps/server` | Spring Boot HTTP adapter | Health and service status |
 | `apps/dashboard` | Next.js interface | Local connectivity page |
 | `modules/exchange-core` | Matching, risk and state reducers | In-memory Java library; [rules and example](modules/exchange-core/README.md) |
-| `modules/journal` | Event storage and replay | Module boundary only |
+| `modules/journal` | Event storage and replay | Locked journal, checksums, offline replay; [format and example](modules/journal/README.md) |
 | `modules/simulation` | Virtual time and seeded strategies | Module boundary only |
 | `api/openapi.yaml` | Authoritative HTTP contract | Two read-only endpoints |
 | `scenarios` | Synthetic experiment configurations | Documentation only |
@@ -74,6 +74,7 @@ There is no run creation or order-entry endpoint yet. See [OpenAPI](api/openapi.
 - [ABIDES, Bristol Stock Exchange and exchange-core: comparison and verified licenses](docs/research/2026-10-19-market-simulators.md)
 - [Scaffold implementation plan](docs/superpowers/plans/2026-11-04-ai-exchange-scaffold.md)
 - [Matching/risk implementation plan](docs/superpowers/plans/2026-11-04-matching-risk.md)
+- [Journal/replay implementation plan](docs/superpowers/plans/2026-11-04-journal-replay.md)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 This is a synthetic-market engineering project. It does not reproduce HOSE rules, predict real stock prices or provide a real-money trading venue. Strategy-driven agents do not require machine learning or a paid model API.
