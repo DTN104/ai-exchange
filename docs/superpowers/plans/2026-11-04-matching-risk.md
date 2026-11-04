@@ -43,29 +43,33 @@
 
 ## Task 1: Transactional matching and accounting
 
-- [ ] Add JUnit test dependency. Write failing ExchangeTest cases before implementation: genesis, exact 10@100 sell / 6@105 buy example, FIFO at equal price, best-price before time, both-side maker pricing, multi-level fills, GTC/IOC, reserve/refund/cancel, wrong cancel owner/symbol, unknown trader, malformed order, duplicate/out-of-sequence IDs, overflow, self-trade and final open-order capacity.
-- [ ] Run `./mvnw -pl modules/exchange-core test` and observe missing-domain compilation failure.
-- [ ] Implement records and Exchange with TreeMap price levels and insertion-ordered maker ID sets. Plan by scanning existing makers without modifying them. Settlement applies the planned events once; a failed unexpected reducer operation fail-stops that engine instead of continuing on uncertain state.
-- [ ] Plan events have contiguous global sequence numbers and one command sequence. Rejected business commands still produce events; genesis validation errors throw before an engine is created.
-- [ ] Add and run tests for non-mutating plan, stale/reused/foreign batch rejection, immutable account/book/event views and all rejection paths leaving financial state unchanged.
-- [ ] Run module tests and full `./mvnw verify`, inspect output, then commit the core and tests.
+- [x] Add JUnit test dependency. Write failing ExchangeTest cases before implementation: genesis, exact 10@100 sell / 6@105 buy example, FIFO at equal price, best-price before time, both-side maker pricing, multi-level fills, GTC/IOC, reserve/refund/cancel, wrong cancel owner/symbol, unknown trader, malformed order, duplicate/out-of-sequence IDs, overflow, self-trade and final open-order capacity.
+- [x] Run `./mvnw -pl modules/exchange-core test` and observe missing-domain compilation failure.
+- [x] Implement records and Exchange with TreeMap price levels and insertion-ordered maker ID sets. Plan by scanning existing makers without modifying them. Settlement applies the planned events once; a failed unexpected reducer operation fail-stops that engine instead of continuing on uncertain state.
+- [x] Plan events have contiguous global sequence numbers and one command sequence. Rejected business commands still produce events; genesis validation errors throw before an engine is created.
+- [x] Add and run tests for non-mutating plan, stale/reused/foreign batch rejection, immutable account/book/event views and all rejection paths leaving financial state unchanged.
+- [x] Run module tests and full `./mvnw verify`, inspect output, then commit the core and tests.
 
 ## Task 2: Independent invariants and reproducibility
 
-- [ ] Write a deterministic workload of at least 5,000 mixed place/cancel commands against 8 accounts. After every command, recompute total cash/shares with BigInteger and check nonnegative available/reserved balances, exact reserves implied by all open orders, uncrossed book and one book entry per active order.
-- [ ] Run the same workload against genesis maps with reversed insertion order; assert equal event lists and snapshots at every step. No file-journal/replay claim follows from this test.
-- [ ] Test aggregate near-Long.MAX_VALUE balances and settlement, empty IOC book, full-book IOC and partial-fill self-trade before finishing.
-- [ ] Run invariants and full reactor tests; preserve failure seeds/messages for reproducibility. Commit verification tests.
+- [x] Write a deterministic workload of at least 5,000 mixed place/cancel commands against 8 accounts. After every command, recompute total cash/shares with BigInteger and check nonnegative available/reserved balances, exact reserves implied by all open orders, uncrossed book and one book entry per active order.
+- [x] Run the same workload against genesis maps with reversed insertion order; assert equal event lists and snapshots at every step. No file-journal/replay claim follows from this test.
+- [x] Test aggregate near-Long.MAX_VALUE balances and settlement, empty IOC book, full-book IOC and partial-fill self-trade before finishing.
+- [x] Run invariants and full reactor tests; preserve failure seeds/messages for reproducibility. Commit verification tests.
 
 ## Task 3: Review and delivery
 
-- [ ] Document the Java API/example and its sequential-ID, single-thread confinement, plan/apply and open-order-limit policies. Root docs distinguish the implemented core library from the status-only web application.
-- [ ] Confirm no consumer currently calls the new library: existing server responses, OpenAPI, dashboard and smoke tests retain their current behavior.
-- [ ] Run full Maven verify; existing dashboard tests/lint/typecheck/build and real-server smoke plus signal-cleanup regression checks. Add core test reports to CI artifact collection.
-- [ ] One fresh read-only reviewer examines the branch, money/priority boundaries and independent invariants. Reproduce and fix important findings with tests before publication; note minor deferred items.
-- [ ] Commit verified changes, push the feature branch and create a reviewable GitHub pull request targeting main, with actual test evidence. Attach it to this chat. Do not merge the PR without the user's integration decision.
-- [ ] Confirm CI on the pull request, working tree status and final scope: B complete as a library; journal/replay, agents, API order entry and market dashboard still planned.
+- [x] Document the Java API/example and its sequential-ID, single-thread confinement, plan/apply and open-order-limit policies. Root docs distinguish the implemented core library from the status-only web application.
+- [x] Confirm no consumer currently calls the new library: existing server responses, OpenAPI, dashboard and smoke tests retain their current behavior.
+- [x] Run full Maven verify; existing dashboard tests/lint/typecheck/build and real-server smoke plus signal-cleanup regression checks. Add core test reports to CI artifact collection.
+- [x] One fresh read-only reviewer examines the branch, money/priority boundaries and independent invariants. Reproduce and fix important findings with tests before publication; note minor deferred items.
+- [x] Commit verified changes, push the feature branch and create a reviewable GitHub pull request targeting main, with actual test evidence. Attach it to this chat. Do not merge the PR without the user's integration decision.
+- [x] Confirm CI on the pull request, working tree status and final scope: B complete as a library; journal/replay, agents, API order entry and market dashboard still planned.
 
 ## Self-review
 
 This plan refines the already-approved matching/risk rules without introducing new server or product flows. The five review conditions are each assigned concrete tests. The IDs and atomic capacity policy above settle routine internal choices that were not specified in detail. Native execution is preserved from milestone A; no repeated authorization is requested for the work the owner just instructed us to perform.
+
+## Delivery
+
+Implemented on matching-risk and published as [PR #5](https://github.com/DTN104/ai-exchange/pull/5). Independent review found no blocking findings. [Linux CI](https://github.com/DTN104/ai-exchange/actions/runs/41799435495) passed for implementation commit 96e6214. The PR remains open; merging into main is not part of this delivery. See [verification](../../verification/2026-11-04-matching-risk.md) for evidence and limits.

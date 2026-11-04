@@ -26,4 +26,4 @@ A fresh read-only reviewer inspected the whole branch, checked money arithmetic/
 
 Not assessed as completed: persistent replay/durability, HTTP order entry, concurrent access, agent scheduling, hundreds-of-traders performance and a trading dashboard. Single-thread confinement is a requirement, not a concurrency guarantee. Existing development-tool advisory notes in SECURITY.md still apply.
 
-Linux CI and the final published commit are tracked by the GitHub pull request; local success alone does not establish CI success. No merge into main is included in this delivery.
+[Linux CI passed](https://github.com/DTN104/ai-exchange/actions/runs/41799435495) for implementation commit `96e62141e89954bc5666275edf2c6ec93c4cbe29`, including Java verify, dashboard checks, production smoke and signal regressions. The implementation is available in [PR #5](https://github.com/DTN104/ai-exchange/pull/5); later documentation commits have their own CI status there. No merge into main is included in this delivery.
