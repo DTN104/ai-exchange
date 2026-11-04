@@ -184,7 +184,7 @@ final class JournalCodec {
             case "OrderRejected" -> {
                 fields(node, "type", "orderId", "reason", "consumesOrderId");
                 if (!node.get("consumesOrderId").isBoolean()) throw new IOException("Expected boolean flag");
-                yield new OrderRejected(number(node, "orderId"), enumValue(node, "reason", RejectionReason.class), node.get("consumesOrderId").booleanValue());
+                yield new OrderRejected(number(node, "orderId"), enumValue(node, "reason", RejectionReason.class), node.get("consumesOrderId").asBoolean());
             }
             case "TradeExecuted" -> {
                 fields(node, "type", "makerOrderId", "takerOrderId", "price", "quantity");
@@ -276,7 +276,7 @@ final class JournalCodec {
         for (var name : names) if (!node.has(name)) throw new IOException("Missing JSON field: " + name);
     }
     static String text(JsonNode node, String field) throws IOException {
-        if (node == null || node.get(field) == null || !node.get(field).isTextual()) throw new IOException("Expected string: " + field);
+        if (node == null || node.get(field) == null || !node.get(field).isString()) throw new IOException("Expected string: " + field);
         return node.get(field).asString();
     }
     private static String nullableText(JsonNode node, String field) throws IOException { return node.get(field).isNull() ? null : text(node, field); }
@@ -291,7 +291,7 @@ final class JournalCodec {
     private static int smallInt(JsonNode node, String field) throws IOException {
         var value = node.get(field);
         if (value == null || !value.isIntegralNumber() || !value.canConvertToInt()) throw new IOException("Expected integer: " + field);
-        return value.intValue();
+        return value.asInt();
     }
     private static ArrayNode array(JsonNode node, String field) throws IOException {
         var value = node.get(field); if (value == null || !value.isArray()) throw new IOException("Expected array: " + field); return (ArrayNode) value;
