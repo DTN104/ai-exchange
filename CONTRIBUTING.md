@@ -19,4 +19,4 @@ No matching or agent code from the research repositories has been reused in the 
 
 ## Scope
 
-The current release is scaffold infrastructure. Avoid presenting module boundaries as a completed simulator. The first correctness milestone is matching and risk; later milestones add persistence, strategies and market visualization.
+The matching/risk core is implemented as a Java library, with immutable event plans and snapshots. The web application remains status-only. Persistence, saved-event replay, trader strategies and market visualization are later milestones; avoid presenting the library as a running market. Changes to the core must retain independent conservation/reservation checks and must not mutate committed state during planning.

@@ -4,7 +4,7 @@
 
 An open-source market microstructure simulator built with Java and Next.js. The goal is a synthetic stock exchange with hundreds of strategy-driven traders, event sourcing and verifiable deterministic replay.
 
-**Current status: scaffold. Simulation is not implemented yet.** The backend serves health and service status. The web page checks the real local backend and handles disconnection. Matching, balances, agents, journals and replay are planned in [the roadmap](docs/roadmap.md).
+**Current status: matching/risk Java library implemented; web application remains status-only.** The core supports price-time matching, GTC/IOC/cancel, balance reservations and settlement. The backend serves health and service status; the web page checks its connection. A running market with agents, durable journals and replay remains planned in [the roadmap](docs/roadmap.md).
 
 ## Run locally
 
@@ -27,9 +27,9 @@ npm run dev
 
 Open [the local dashboard](http://127.0.0.1:3000). Both processes bind to localhost. The dashboard reads the backend at port 8080; refresh the page after starting or stopping the backend. Use `npm run build` and `npm start` in place of `npm run dev` for a production build.
 
-The 512 MiB Java heap cap is a starting configuration, not a measured total-memory guarantee. There is no simulation workload or M2 performance benchmark yet.
+The 512 MiB Java heap cap is a starting configuration, not a measured total-memory guarantee. The core has a deterministic 5,000-command correctness test; there is no hundreds-of-agents runtime or M2 performance benchmark yet.
 
-## Check the scaffold
+## Verify the project
 
 From the repository root:
 
@@ -53,7 +53,7 @@ Stop any existing local servers before the smoke test. It needs ports 3000 and 8
 | --- | --- | --- |
 | `apps/server` | Spring Boot HTTP adapter | Health and service status |
 | `apps/dashboard` | Next.js interface | Local connectivity page |
-| `modules/exchange-core` | Matching, risk and state reducers | Module boundary only |
+| `modules/exchange-core` | Matching, risk and state reducers | In-memory Java library; [rules and example](modules/exchange-core/README.md) |
 | `modules/journal` | Event storage and replay | Module boundary only |
 | `modules/simulation` | Virtual time and seeded strategies | Module boundary only |
 | `api/openapi.yaml` | Authoritative HTTP contract | Two read-only endpoints |
@@ -73,6 +73,7 @@ There is no run creation or order-entry endpoint yet. See [OpenAPI](api/openapi.
 - [MVP architecture](docs/superpowers/specs/2026-10-19-ai-exchange-design.md)
 - [ABIDES, Bristol Stock Exchange and exchange-core: comparison and verified licenses](docs/research/2026-10-19-market-simulators.md)
 - [Scaffold implementation plan](docs/superpowers/plans/2026-11-04-ai-exchange-scaffold.md)
+- [Matching/risk implementation plan](docs/superpowers/plans/2026-11-04-matching-risk.md)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 This is a synthetic-market engineering project. It does not reproduce HOSE rules, predict real stock prices or provide a real-money trading venue. Strategy-driven agents do not require machine learning or a paid model API.
