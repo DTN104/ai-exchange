@@ -19,6 +19,6 @@ No matching or agent code from the research repositories has been reused in the 
 
 ## Scope
 
-The matching/risk core is implemented as a Java library, with immutable event plans and snapshots. The web application remains status-only. The journal library now persists event batches and verifies saved-event replay; trader strategies and market visualization are later milestones. Avoid presenting these libraries as a running market. Changes to the core must retain independent conservation/reservation checks and must not mutate committed state during planning.
+The matching/risk core is implemented as a Java library, with immutable event plans and snapshots. The web application remains status-only. The journal library persists event batches and verifies saved-event replay. The headless simulator runs four seeded trader strategies. Market visualization is a separate milestone. Changes to the core must retain independent conservation/reservation checks and must not mutate committed state during planning.
 
 Persistent schemaVersion and matching engine semantics are versioned. Changes to event tags/fields, canonical encoding or reducer rules require an explicit compatibility/version decision and tests for unsupported or older input. Never silently reinterpret an existing journal.

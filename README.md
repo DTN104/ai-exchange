@@ -4,9 +4,22 @@
 
 An open-source market microstructure simulator built with Java and Next.js. The goal is a synthetic stock exchange with hundreds of strategy-driven traders, event sourcing and verifiable deterministic replay.
 
-**Current status: matching/risk and journal/state-replay Java libraries implemented; web application remains status-only.** The core supports price-time matching, GTC/IOC/cancel, reservations and settlement. The journal adds persist-before-apply records, checksums, offline replay and final hash verification. A running market with agents and live trading controls remains planned in [the roadmap](docs/roadmap.md).
+**Current status: the local CLI runs a synthetic AIX market with seeded traders.** The matching core supports price-time matching, GTC/IOC/cancel, reservations and settlement. The journal supports persist-before-apply records, checksums, offline state replay and deterministic reruns. The web application still shows connectivity only. See [the roadmap](docs/roadmap.md).
 
-## Run locally
+## Run the synthetic market
+
+Requires Java 21. From the repository root:
+
+```sh
+./mvnw verify
+mkdir -p data
+./scripts/simulate.sh run scenarios/aix-demo.json 42 data/aix-demo.ndjson
+./scripts/simulate.sh verify data/aix-demo.ndjson data/aix-demo-rerun.ndjson
+```
+
+The demo runs 300 traders for 10,000 virtual events. The first command prints the trade count, final state hash and event digest after checking state replay. The second reconstructs the scenario and seed from the journal and checks that a new run matches both hashes. Use a new output filename for each command. See the [simulation module](modules/simulation/README.md) and [synthetic profiles](scenarios/README.md).
+
+## Start the web scaffold
 
 Requires **Java 21** and **Node.js 22.23+ (22.x)** with npm. macOS ARM64 and Linux are supported by the scaffold. No global Maven, Docker, database, market feed, LLM key or paid service is needed. The first build downloads dependencies.
 
@@ -27,7 +40,7 @@ npm run dev
 
 Open [the local dashboard](http://127.0.0.1:3000). Both processes bind to localhost. The dashboard reads the backend at port 8080; refresh the page after starting or stopping the backend. Use `npm run build` and `npm start` in place of `npm run dev` for a production build.
 
-The 512 MiB Java heap cap is a starting configuration, not a measured total-memory guarantee. The core has a deterministic 5,000-command correctness test; there is no hundreds-of-agents runtime or M2 performance benchmark yet.
+The 512 MiB Java heap cap limits the heap only. The headless simulator and the web server are separate entry points.
 
 ## Verify the project
 
@@ -55,9 +68,9 @@ Stop any existing local servers before the smoke test. It needs ports 3000 and 8
 | `apps/dashboard` | Next.js interface | Local connectivity page |
 | `modules/exchange-core` | Matching, risk and state reducers | In-memory Java library; [rules and example](modules/exchange-core/README.md) |
 | `modules/journal` | Event storage and replay | Locked journal, checksums, offline replay; [format and example](modules/journal/README.md) |
-| `modules/simulation` | Virtual time and seeded strategies | Module boundary only |
+| `modules/simulation` | Virtual time and seeded strategies | Four trader strategies and a [headless CLI](modules/simulation/README.md) |
 | `api/openapi.yaml` | Authoritative HTTP contract | Two read-only endpoints |
-| `scenarios` | Synthetic experiment configurations | Documentation only |
+| `scenarios` | Synthetic experiment configurations | Versioned [300- and 500-trader profiles](scenarios/README.md) |
 
 Core modules will remain independent of Spring, HTTP and databases. Dependency versions are pinned: Spring Boot 4.1.2, Maven 3.9.16 (Wrapper 3.3.4), Next.js 16.4.5, React 19.3.1 and TypeScript 5.9.3. Maven distribution downloads are verified against a pinned SHA-256 checksum, derived after checking the published SHA-512.
 
@@ -75,6 +88,7 @@ There is no run creation or order-entry endpoint yet. See [OpenAPI](api/openapi.
 - [Scaffold implementation plan](docs/superpowers/plans/2026-11-04-ai-exchange-scaffold.md)
 - [Matching/risk implementation plan](docs/superpowers/plans/2026-11-04-matching-risk.md)
 - [Journal/replay implementation plan](docs/superpowers/plans/2026-11-04-journal-replay.md)
+- [Trader simulation implementation plan](docs/superpowers/plans/2026-11-12-trader-simulation.md)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 This is a synthetic-market engineering project. It does not reproduce HOSE rules, predict real stock prices or provide a real-money trading venue. Strategy-driven agents do not require machine learning or a paid model API.

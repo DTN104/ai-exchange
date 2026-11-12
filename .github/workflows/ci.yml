@@ -28,6 +28,13 @@ jobs:
           cache-dependency-path: apps/dashboard/package-lock.json
       - name: Verify Java reactor
         run: ./mvnw -B verify
+      - name: Run and verify the packaged 300-trader demo
+        run: |
+          demo_dir=$(mktemp -d "$RUNNER_TEMP/aix-demo.XXXXXX")
+          result=$(./scripts/simulate.sh run scenarios/aix-demo.json 42 "$demo_dir/run.ndjson")
+          printf '%s\n' "$result"
+          grep -Eq 'agentCount=300 processedEvents=10000 .*tradeCount=[1-9][0-9]*' <<< "$result"
+          ./scripts/simulate.sh verify "$demo_dir/run.ndjson" "$demo_dir/rerun.ndjson"
       - name: Install dashboard dependencies
         run: npm --prefix apps/dashboard ci --no-fund
       - name: Test dashboard adapter
@@ -53,5 +60,6 @@ jobs:
             apps/server/target/surefire-reports/
             modules/exchange-core/target/surefire-reports/
             modules/journal/target/surefire-reports/
+            modules/simulation/target/surefire-reports/
           retention-days: 7
           if-no-files-found: ignore

@@ -375,6 +375,10 @@ public final class Exchange {
 
     private NavigableMap<Long, LinkedHashSet<Long>> book(Side side) { return side == Side.BUY ? bids : asks; }
 
+    public long nextOrderId() { return nextOrderId; }
+
+    public boolean isOrderOpen(long orderId) { return orders.containsKey(orderId); }
+
     public ExchangeSnapshot snapshot() {
         ensureHealthy();
         var accountViews = accounts.entrySet().stream().map(e -> new AccountView(e.getKey(),
