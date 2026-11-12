@@ -72,7 +72,14 @@ public final class JournaledExchange implements AutoCloseable {
         }
     }
     public ExchangeSnapshot snapshot() { return exchange.snapshot(); }
+    public long nextOrderId() { return exchange.nextOrderId(); }
+    public boolean isOrderOpen(long orderId) { return exchange.isOrderOpen(orderId); }
     public boolean isFailed() { return failed; }
+
+    /** Stop admission and leave the journal unsealed when the owner fails outside execute. */
+    public void abort() {
+        if (!closed) failed = true;
+    }
 
     @Override public void close() throws IOException {
         if (closed) return;

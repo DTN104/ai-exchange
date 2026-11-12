@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.List;
@@ -30,6 +31,8 @@ import static io.aiexchange.core.ExchangeEvent.*;
 final class JournalCodec {
     static final int MAX_RECORD_BYTES = 8 * 1024 * 1024;
     static final long MAX_JOURNAL_BYTES = 256L * 1024 * 1024;
+    private static final String[] GENESIS_FIELDS = {"schemaVersion", "kind", "recordSequence", "engineVersion",
+            "strategyVersion", "prngVersion", "runId", "scenarioHash", "seed", "symbol", "maxOpenOrders", "traders"};
     private static final JsonMapper JSON = JsonMapper.builder(JsonFactory.builder()
             .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
             .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(32)
@@ -70,7 +73,7 @@ final class JournalCodec {
         wrapper.put("checksum", hex(digest().digest(canonical(data))));
         var bytes = canonical(wrapper);
         if (bytes.length + 1 > MAX_RECORD_BYTES) throw new IOException("Journal record exceeds 8 MiB");
-        var line = java.util.Arrays.copyOf(bytes, bytes.length + 1);
+        var line = Arrays.copyOf(bytes, bytes.length + 1);
         line[bytes.length] = '\n';
         return line;
     }
@@ -98,12 +101,20 @@ final class JournalCodec {
         var data = object().put("symbol", Exchange.SYMBOL).put("maxOpenOrders", manifest.maxOpenOrders());
         var traders = data.putArray("traders");
         manifest.traders().forEach((id, initial) -> traders.add(put(put(put(object(), "traderId", id), "cash", initial.cash()), "shares", initial.shares())));
+        if (manifest.simulation() != null) {
+            var parameters = data.putObject("parameters");
+            manifest.simulation().parameters().forEach((name, value) -> put(parameters, name, value));
+        }
         return data;
     }
     static String scenarioHash(RunManifest manifest) throws IOException { return hex(digest().digest(canonical(scenario(manifest)))); }
     static byte[] initialization(RunManifest manifest) throws IOException {
         var data = base("RunInitialized", 0);
-        data.put("engineVersion", Exchange.ENGINE_VERSION).put("strategyVersion", "none").put("prngVersion", "none")
+        var simulation = manifest.simulation();
+        if (simulation != null) data.put("schemaVersion", 2);
+        data.put("engineVersion", Exchange.ENGINE_VERSION)
+                .put("strategyVersion", simulation == null ? "none" : simulation.strategyVersion())
+                .put("prngVersion", simulation == null ? "none" : simulation.prngVersion())
                 .put("runId", manifest.runId()).put("scenarioHash", scenarioHash(manifest));
         put(data, "seed", manifest.seed());
         var config = scenario(manifest);
@@ -111,11 +122,20 @@ final class JournalCodec {
         return wrap(data);
     }
     static RunManifest readManifest(JsonNode data) throws IOException {
-        fields(data, "schemaVersion", "kind", "recordSequence", "engineVersion", "strategyVersion", "prngVersion",
-                "runId", "scenarioHash", "seed", "symbol", "maxOpenOrders", "traders");
-        version(data, "RunInitialized");
-        if (number(data, "recordSequence") != 0 || !text(data, "engineVersion").equals(Exchange.ENGINE_VERSION)
-                || !text(data, "strategyVersion").equals("none") || !text(data, "prngVersion").equals("none")
+        int schema = smallInt(data, "schemaVersion");
+        if (schema == 1) {
+            fields(data, GENESIS_FIELDS);
+            if (!text(data, "strategyVersion").equals("none") || !text(data, "prngVersion").equals("none"))
+                throw new IOException("Unsupported legacy run initialization");
+        } else if (schema == 2) {
+            var names = Arrays.copyOf(GENESIS_FIELDS, GENESIS_FIELDS.length + 1);
+            names[GENESIS_FIELDS.length] = "parameters";
+            fields(data, names);
+        } else {
+            throw new IOException("Unsupported run initialization schema");
+        }
+        if (!text(data, "kind").equals("RunInitialized") || number(data, "recordSequence") != 0
+                || !text(data, "engineVersion").equals(Exchange.ENGINE_VERSION)
                 || !text(data, "symbol").equals(Exchange.SYMBOL)) throw new IOException("Unsupported run initialization");
         var traders = new TreeMap<Long, Exchange.Endowment>();
         var entries = array(data, "traders");
@@ -126,10 +146,20 @@ final class JournalCodec {
                 throw new IOException("Duplicate trader ID");
         }
         RunManifest manifest;
-        try { manifest = new RunManifest(text(data, "runId"), number(data, "seed"), traders, smallInt(data, "maxOpenOrders")); }
-        catch (IllegalArgumentException invalid) { throw new IOException("Invalid genesis", invalid); }
+        try {
+            manifest = new RunManifest(text(data, "runId"), number(data, "seed"), traders,
+                    smallInt(data, "maxOpenOrders"), schema == 2 ? readSimulation(data) : null);
+        } catch (IllegalArgumentException invalid) { throw new IOException("Invalid genesis", invalid); }
         if (!hash(data, "scenarioHash").equals(scenarioHash(manifest))) throw new IOException("Scenario hash mismatch");
         return manifest;
+    }
+
+    private static RunManifest.Simulation readSimulation(JsonNode data) throws IOException {
+        var node = data.get("parameters");
+        if (!node.isObject() || node.isEmpty() || node.size() > 64) throw new IOException("Invalid simulation parameters");
+        var parameters = new TreeMap<String, Long>();
+        for (var field : node.properties()) parameters.put(field.getKey(), number(node, field.getKey()));
+        return new RunManifest.Simulation(text(data, "strategyVersion"), text(data, "prngVersion"), parameters);
     }
 
     static ObjectNode commandNode(ExchangeCommand command) {
