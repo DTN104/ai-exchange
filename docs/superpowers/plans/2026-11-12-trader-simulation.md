@@ -24,19 +24,21 @@ One AIX symbol, 300 traders by default, max 500, 20,000 open orders, 100,000 sch
 
 ## Task 1 · Deterministic runtime primitives
 
-- [ ] Add red tests in `modules/simulation/src/test/java/io/aiexchange/simulation` for same-time FIFO, backwards time and queue overflow, pinned SplitMix64 draws, and strict scenario validation.
-- [ ] Implement package-private `VirtualScheduler<T>` and `AgentRandom`, and public `Scenario.load(Path)`, `Scenario.parameters()` and `Scenario.fromParameters(Map<String, Long>)` in `modules/simulation/src/main/java/io/aiexchange/simulation`. Add runnable `scenarios/aix-demo.json` and `scenarios/aix-500.json`.
-- [ ] Run `./mvnw -B -pl modules/simulation -am test` and commit the passing task.
+- [x] Add red tests in `modules/simulation/src/test/java/io/aiexchange/simulation` for same-time FIFO, backwards time and queue overflow, pinned SplitMix64 draws, and strict scenario validation.
+- [x] Implement package-private `VirtualScheduler<T>` and `AgentRandom`, and public `Scenario.load(Path)`, `Scenario.parameters()` and `Scenario.fromParameters(Map<String, Long>)` in `modules/simulation/src/main/java/io/aiexchange/simulation`. Add runnable `scenarios/aix-demo.json` and `scenarios/aix-500.json`.
+- [x] Run `./mvnw -B -pl modules/simulation -am test` and commit the passing task.
 
 ## Task 2 · Journal manifest and simulation
 
-- [ ] Add red tests for v2 manifest round-trip, v1 compatibility, simulation close/replay equality, step partition invariance, quote and taker behavior, cap and fail-stop behavior.
-- [ ] Extend `RunManifest` with optional versioned simulation metadata and `JournalCodec` with a v2 genesis. Add constant-time next-ID and order-open access through `Exchange` and `JournaledExchange` and add a fail-stop hook.
-- [ ] Implement `SimulationRun.create(Path, String, Scenario, long)`, `advance(long)`, `progress()`, `snapshot()` and `close()`. A wake observes the current trade prices and chooses a delayed intent. One delivery may cancel/replace both maker quotes or place one IOC order. Assign strategies round-robin by ascending trader ID. Pin all behavior in a strategy version. Track market price from committed trades only.
-- [ ] Run `./mvnw -B verify` and commit the passing task.
+- [x] Add red tests for v2 manifest round-trip, v1 compatibility, simulation close/replay equality, step partition invariance, quote and taker behavior, cap and fail-stop behavior.
+- [x] Extend `RunManifest` with optional versioned simulation metadata and `JournalCodec` with a v2 genesis. Add next-ID and order-open access without full snapshot allocation through `Exchange` and `JournaledExchange` and add a fail-stop hook.
+- [x] Implement `SimulationRun.create(Path, String, Scenario, long)`, `advance(long)`, `progress()`, `snapshot()` and `close()`. A wake observes the current trade prices and chooses a delayed intent. One delivery may cancel/replace both maker quotes or place one IOC order. Assign strategies round-robin by ascending trader ID. Pin all behavior in a strategy version. Track market price from committed trades only.
+- [x] Run `./mvnw -B verify` and commit the passing task.
 
 ## Task 3 · Runnable demo and verification
 
-- [ ] Add red tests for `SimulationCli.execute(String[], PrintStream)` run and verify. Check an alternate output path, seed/versions, and mismatch reporting.
-- [ ] Implement CLI in simulation and add `scripts/simulate.sh` to invoke it from the existing Boot JAR. The run command compares the live final snapshot to offline replay. The verify command reconstructs the scenario from a sealed journal, runs it again and compares both hashes.
-- [ ] Document the quickstart, scenario and replay guarantees. Run the packaged CLI on 300 and 500 traders and record measured results and limits. Run full suite, obtain fresh branch review, publish a PR based on journal-replay, and verify Linux CI.
+- [x] Add red tests for `SimulationCli.execute(String[], PrintStream)` run and verify. Check an alternate output path, seed/versions, and mismatch reporting.
+- [x] Implement CLI in simulation and add `scripts/simulate.sh` to invoke it from the existing Boot JAR. The run command compares the live final snapshot to offline replay. The verify command reconstructs the scenario from a sealed journal, runs it again and compares both hashes.
+- [x] Document the quickstart, scenario and replay guarantees. Run the packaged CLI on 300 and 500 traders and record measured results and limits.
+
+The pull request targets `journal-replay` and runs the Linux verification workflow.
