@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "symbol": "AIX",
+  "agentCount": 500,
+  "initialPrice": 10000,
+  "cashPerAgent": 10000000,
+  "sharesPerAgent": 1000,
+  "orderQuantity": 4,
+  "quoteHalfSpread": 4,
+  "momentumThreshold": 2,
+  "valueThreshold": 8,
+  "wakeIntervalNanos": 100000000,
+  "latencyNanos": 1000000,
+  "maxEvents": 100000,
+  "maxScheduled": 100000,
+  "maxOpenOrders": 20000,
+  "journalMaxBytes": 268435456
+}
