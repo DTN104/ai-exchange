@@ -39,7 +39,7 @@ This behavior is covered by real-file tests. From the repository root:
 
 The coordinator owns the live core so callers cannot bypass persistence through a mutable engine reference. All calls require a single owner thread. `execute` validates time, plans without mutation, encodes the complete batch, appends it plus LF, calls force(true), applies it, and only then returns the immutable events. Simulation time is a nonnegative, nondecreasing long supplied by the caller; there is no wall-clock scheduler here.
 
-## Format v1
+## Record formats
 
 Each UTF-8 NDJSON physical line is an object with exactly `data` and `checksum`. SHA-256 covers the canonical JSON data: recursively sorted object keys, stable arrays and no whitespace. All long fields use canonical decimal strings, including balances, IDs, counters, seed and simulation time. Duplicate keys, unknown/missing fields, unsupported versions, trailing JSON and invalid UTF-8 reject.
 
@@ -49,7 +49,7 @@ Each UTF-8 NDJSON physical line is an object with exactly `data` and `checksum`.
 | Command, record1..N | Normalized input, outcome, command sequence, simulation time, ordered versioned events with contiguous event sequence numbers. Business rejections are recorded. |
 | RunCompleted, recordN+1 | Final counters/time, economic-state hash and event digest. Appended/forced only on a healthy close. |
 
-Engine version is matching-v1; strategy and PRNG metadata are none because no agent runtime exists yet. Scenario hash covers AIX, genesis and the open-order limit; seed remains separate metadata. Changing persistent format or reducer semantics requires explicit versioning, not a silent change to existing files.
+The engine version is `matching-v1`. Schema 1 initialization represents command-driven runs, with strategy and PRNG versions set to `none`. Schema 2 initialization adds a `parameters` object of resolved simulation settings and records the strategy and PRNG versions. The scenario hash covers AIX, endowments, the open-order limit and any resolved parameters. Seed and run ID are separate metadata. Command and completion records retain schema 1 in both kinds of run. State replay can read either genesis format without running the strategies.
 
 The state hash covers accounts, available/reserved assets, open orders, book levels/FIFO and counters. It excludes run ID, seed, path and wall-clock metadata. The event digest covers each canonical `{simTimeNanos, events}` followed by LF, in command order. Checksums and hashes detect corruption and inconsistent reconstruction; they do not authenticate against an attacker who can rewrite the file and recompute hashes.
 
@@ -76,4 +76,4 @@ Default reads never modify a file. A final record without LF is rejected as a to
 - Append/force, encoding/resource or reducer failure closes admission; `isFailed()` identifies that state. Failed runs do not fabricate a completion seal. Close is idempotent and releases owned resources.
 - force(true) provides the Java/OS file-flush boundary; physical power-loss survival, directory-entry durability and storage-controller behavior are not certified by these tests.
 
-Agent scheduling/PRNG snapshots, continuing an old run, real data, a replay HTTP endpoint and a market dashboard remain future work.
+See the [simulation module](../simulation/README.md) to rerun a sealed simulation journal with its original scenario and seed. Resuming scheduler and PRNG state, a replay HTTP endpoint and a market dashboard remain future work.

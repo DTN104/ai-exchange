@@ -58,7 +58,7 @@ public record Scenario(int agentCount, long initialPrice, long cashPerAgent, lon
             if (bytes.length > MAX_SCENARIO_BYTES) throw new IOException("Scenario exceeds 16 KiB");
             var json = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(bytes)).toString();
             var root = JSON.readTree(json);
-            if (root == null || !root.isObject() || !root.path("symbol").isTextual()
+            if (root == null || !root.isObject() || !root.path("symbol").isString()
                     || !Exchange.SYMBOL.equals(root.path("symbol").asString())) {
                 throw new IOException("Scenario must be an object with symbol AIX");
             }
