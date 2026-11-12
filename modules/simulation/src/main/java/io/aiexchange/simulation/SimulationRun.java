@@ -6,7 +6,9 @@ import io.aiexchange.core.ExchangeCommand.CancelOrder;
 import io.aiexchange.core.ExchangeCommand.PlaceOrder;
 import io.aiexchange.core.ExchangeCommand.Side;
 import io.aiexchange.core.ExchangeCommand.TimeInForce;
+import io.aiexchange.core.ExchangeEvent.OrderRejected;
 import io.aiexchange.core.ExchangeEvent.OrderRested;
+import io.aiexchange.core.ExchangeEvent.RejectionReason;
 import io.aiexchange.core.ExchangeEvent.TradeExecuted;
 import io.aiexchange.core.ExchangeSnapshot;
 import io.aiexchange.journal.JournaledExchange;
@@ -136,6 +138,10 @@ public final class SimulationRun implements AutoCloseable {
                     trades++;
                 }
                 case OrderRested ignored -> rested = true;
+                case OrderRejected rejected -> {
+                    if (rejected.reason() == RejectionReason.OPEN_ORDER_LIMIT)
+                        throw new IOException("Open-order limit reached: " + scenario.maxOpenOrders());
+                }
                 default -> {}
             }
         }

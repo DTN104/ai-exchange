@@ -74,6 +74,25 @@ class SimulationRunTest {
         assertTrue(Files.size(path) <= 8192);
     }
 
+    @Test void openOrderOverflowIsJournaledAndStopsTheRun() throws IOException {
+        var path = directory.resolve("order-limit.ndjson");
+        var scenario = load(ScenarioTest.JSON.replace("\"maxOpenOrders\": 20", "\"maxOpenOrders\": 1"));
+        try (var run = SimulationRun.create(path, "order-limit", scenario, 42)) {
+            assertEquals(0, run.advance(2).simTimeNanos()); // Both market makers wake before either arrival.
+            var failure = assertThrows(IOException.class, () -> run.advance(1));
+            assertTrue(failure.getMessage().contains("Open-order limit"));
+            assertEquals(SimulationRun.Status.FAILED, run.progress().status());
+            assertThrows(IllegalStateException.class, () -> run.advance(1));
+            assertEquals(2, run.snapshot().commandSequence());
+            assertEquals(1, run.snapshot().orders().size());
+        }
+        var replay = JournalReplay.read(path);
+        assertFalse(replay.sealed());
+        assertEquals(2, replay.journalCommands());
+        assertEquals(1, replay.snapshot().orders().size());
+        assertEquals(3, replay.snapshot().nextOrderId());
+    }
+
     private Scenario load(String json) throws IOException {
         return Scenario.load(Files.writeString(directory.resolve("scenario.json"), json));
     }
