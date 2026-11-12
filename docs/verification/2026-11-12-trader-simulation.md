@@ -7,7 +7,7 @@ Measured on 12 November 2026 on a MacBook Pro (Mac14,9, Apple M2 Pro, 32 GiB RAM
 | 300 traders | 10,000 | 5,826 | 2,262 | 4,239,197 bytes (4.04 MiB) | 12.80 s | 380.4 MiB |
 | 500 traders | 100,000 | 59,163 | 25,016 | 44,809,350 bytes (42.73 MiB) | 100.58 s | 415.3 MiB |
 
-Both profiles passed offline replay and fresh deterministic rerun. The rerun compares the complete exchange snapshot, state hash and event digest. The 300-trader verification invocation took 10.60 s and 416.0 MiB peak RSS. The successful 500-trader verification retry took 459.94 s and 407.8 MiB peak RSS. The retry includes reading the source journal, writing a new run and replaying it. Elapsed time depends on the machine and file flushes. These measurements cover the headless CLI. Connected Spring Boot, SSE and dashboard measurements are part of milestone E.
+Both profiles passed offline replay and fresh deterministic rerun. The rerun compares the complete exchange snapshot, state hash and event digest. The 300-trader verification invocation took 10.60 s and 416.0 MiB peak RSS. The 500-trader verification on the final build took 99.82 s and 422.6 MiB peak RSS. Verification includes reading the source journal, writing a new run and replaying it. Elapsed time depends on the machine and file flushes. These measurements cover the headless CLI. Connected Spring Boot, SSE and dashboard measurements are part of milestone E.
 
 | Profile | Event digest | Economic state hash |
 | --- | --- | --- |
@@ -28,3 +28,5 @@ mkdir -p data
 An overlapping Maven repackage interrupted the first 500-trader verification attempt because the launcher was still reading the JAR. The retry used a stable package and a new journal. Run the build and CLI sequentially. CI also runs the packaged 300-trader profile and reruns it from the resulting journal.
 
 Local validation included 72 Java tests, nine dashboard tests, two smoke shutdown tests, lint, type checking, production build and the real status-page smoke test. The unchanged OpenAPI contract passed lint with two existing warnings for health and status response coverage. Dashboard validation used standalone Node 22.23.3 after the Homebrew Node 22 binary failed to load its local simdjson library.
+
+Independent review identified an open-order cap that was recorded but did not stop the run. The fix has a real-file regression test, and the packaged CLI returned exit code 1 with the cap message. Potential follow-up tests include a frozen pre-simulation journal fixture and dedicated checks for retaining and replacing quotes.
